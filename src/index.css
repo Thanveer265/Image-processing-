@@ -1,0 +1,71 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --il-bg: #F2F4F7;
+  --il-surface: #FFFFFF;
+  --il-surface-elevated: #EAECEF;
+  --il-teal: #233D4D;
+  --il-accent: #FE7F2D;
+  --il-accent-hover: #E56A1B;
+  --il-border: #D8E0E6;
+  --il-text: #111C24;
+  --il-text-muted: #526575;
+}
+
+.dark {
+  --il-bg: #090B0E;
+  --il-surface: #111920;
+  --il-surface-elevated: #17232D;
+  --il-teal: #233D4D;
+  --il-accent: #FE7F2D;
+  --il-accent-hover: #FF944D;
+  --il-border: #233D4D;
+  --il-text: #EAECEF;
+  --il-text-muted: #8FA3B3;
+}
+
+@layer base {
+  * {
+    border-color: var(--il-border);
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+    background-color: var(--il-bg);
+    color: var(--il-text);
+  }
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+  code, kbd, samp, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Precision range sliders styled to the #233D4D / #FE7F2D palette */
+input[type='range'] {
+  accent-color: #FE7F2D;
+}
+
+/* Custom refined scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #C4CFD8;
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #233D4D;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FE7F2D;
+}

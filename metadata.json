@@ -1,0 +1,6 @@
+{
+  "name": "ImageLab - Feature Extraction & SVD Analysis Platform",
+  "description": "Advanced Image Feature Extraction and Mathematical Analysis Workspace with PCA, SVD, Discrete Cosine Transform, and reconstruction benchmarks.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
