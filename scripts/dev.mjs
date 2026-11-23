@@ -7,7 +7,9 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 const backendDir = path.join(rootDir, 'backend');
-const venvUvicorn = path.join(backendDir, '.venv', 'bin', 'uvicorn');
+const venvUvicorn = process.platform === 'win32'
+  ? path.join(backendDir, '.venv', 'Scripts', 'uvicorn.exe')
+  : path.join(backendDir, '.venv', 'bin', 'uvicorn');
 const bootstrapScript = path.join(rootDir, 'scripts', 'bootstrap-backend.sh');
 const localViteBin = path.join(
   rootDir,
@@ -15,6 +17,7 @@ const localViteBin = path.join(
   '.bin',
   process.platform === 'win32' ? 'vite.cmd' : 'vite'
 );
+const localViteScript = path.join(rootDir, 'node_modules', 'vite', 'bin', 'vite.js');
 
 const backendPort = Number(process.env.BACKEND_PORT || 8001);
 
@@ -54,19 +57,22 @@ function isBackendHealthy(port, host = '127.0.0.1') {
 
 function startUvicorn() {
   if (shuttingDown || backendProc) return;
-  if (!fs.existsSync(venvUvicorn)) {
-    console.warn('[ImageLab] FastAPI uvicorn binary not found at', venvUvicorn);
-    return;
-  }
+
+  const hasVenv = fs.existsSync(venvUvicorn);
+  const command = hasVenv ? venvUvicorn : (process.platform === 'win32' ? 'python' : 'python3');
+  const args = hasVenv
+    ? ['app.main:app', '--host', '127.0.0.1', '--port', String(backendPort)]
+    : ['-m', 'uvicorn', 'app.main:app', '--host', '127.0.0.1', '--port', String(backendPort)];
 
   console.log(`[ImageLab] Starting FastAPI backend on 127.0.0.1:${backendPort}...`);
   const proc = spawn(
-    venvUvicorn,
-    ['app.main:app', '--host', '127.0.0.1', '--port', String(backendPort)],
+    command,
+    args,
     {
       cwd: backendDir,
       stdio: 'inherit',
       env: { ...process.env, PYTHONPATH: backendDir },
+      shell: false,
     }
   );
   backendProc = proc;
@@ -92,7 +98,7 @@ async function ensureBackendRunning() {
       return;
     }
 
-    if (fs.existsSync(venvUvicorn)) {
+    if (fs.existsSync(venvUvicorn) || process.platform === 'win32') {
       startUvicorn();
       return;
     }
@@ -147,14 +153,18 @@ function shutdown(exitCode = 0) {
 
 function main() {
   // 1. Start Vite IMMEDIATELY on port 3000 so the dev server is always ready right away.
-  const viteCmd = fs.existsSync(localViteBin)
-    ? localViteBin
-    : process.platform === 'win32'
-      ? 'npx.cmd'
-      : 'npx';
-  const viteArgs = fs.existsSync(localViteBin)
-    ? ['--port=3000', '--host=0.0.0.0']
-    : ['vite', '--port=3000', '--host=0.0.0.0'];
+  const viteCmd = fs.existsSync(localViteScript)
+    ? process.execPath
+    : fs.existsSync(localViteBin)
+      ? localViteBin
+      : process.platform === 'win32'
+        ? 'npx.cmd'
+        : 'npx';
+  const viteArgs = fs.existsSync(localViteScript)
+    ? [localViteScript, '--port=3000', '--host=0.0.0.0']
+    : fs.existsSync(localViteBin)
+      ? ['--port=3000', '--host=0.0.0.0']
+      : ['vite', '--port=3000', '--host=0.0.0.0'];
 
   viteProc = spawn(viteCmd, viteArgs, {
     cwd: rootDir,
@@ -163,6 +173,7 @@ function main() {
       ...process.env,
       VITE_BACKEND_PROXY_TARGET: `http://127.0.0.1:${backendPort}`,
     },
+    shell: false,
   });
 
   viteProc.on('error', err => {

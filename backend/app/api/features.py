@@ -20,19 +20,10 @@ def extract_features(req: FeatureExtractRequest, db: Session = Depends(get_db)):
     return extract_features_for_image(db, req)
 
 
-@router.get("/{image_id}", response_model=FeatureExtractResponse)
+@router.get("/{image_id}", response_model=FeatureExtractResponse | None)
 def get_features(image_id: str, db: Session = Depends(get_db)):
     get_image_record(db, image_id)
-    res = get_latest_features_for_image(db, image_id)
-    if not res:
-        raise HTTPException(
-            status_code=404,
-            detail={
-                "error_code": "FEATURES_NOT_FOUND",
-                "message": f"No extracted features found for image '{image_id}'. Run extraction first.",
-            },
-        )
-    return res
+    return get_latest_features_for_image(db, image_id)
 
 
 @router.get("/{feature_id}/artifact/{kind}")

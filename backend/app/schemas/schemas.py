@@ -230,6 +230,25 @@ class MedicalStatusResponse(BaseModel):
 
 
 
+class MedicalProbabilityItem(BaseModel):
+    label: str
+    probability: float
+
+
+class MedicalClassificationResult(BaseModel):
+    image_id: str
+    predicted_class: str
+    confidence: float
+    probabilities: List[MedicalProbabilityItem]
+    model_version: str
+    architecture: str
+    input_size: int
+    processing_time_ms: float
+    disclaimer: str
+    model_status: Optional[str] = "ready"
+    status: Optional[str] = "success"
+
+
 class MedicalClassifyRequest(BaseModel):
     image_id: str
 

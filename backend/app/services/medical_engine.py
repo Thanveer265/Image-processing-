@@ -640,7 +640,7 @@ def run_inference_on_pil(pil_img: Image.Image, *, image_id: str) -> Dict[str, An
             },
         ) from exc
 
-    with torch.no_grad():
+    with torch.inference_mode():
         logits = model(tensor)
         if logits.ndim != 2 or logits.shape[1] != len(labels):
             raise HTTPException(
@@ -680,6 +680,8 @@ def run_inference_on_pil(pil_img: Image.Image, *, image_id: str) -> Dict[str, An
         "input_size": height,
         "processing_time_ms": elapsed_ms,
         "disclaimer": RESEARCH_DISCLAIMER,
+        "model_status": "ready",
+        "status": "success",
     }
 
 

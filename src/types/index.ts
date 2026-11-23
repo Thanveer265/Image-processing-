@@ -325,6 +325,8 @@ export interface MedicalClassificationResult {
   input_size: number;
   processing_time_ms: number;
   disclaimer: string;
+  model_status?: string;
+  status?: string;
 }
 
 export interface ComparisonItem {

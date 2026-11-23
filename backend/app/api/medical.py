@@ -2,7 +2,12 @@ from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.orm import Session
 
 from app.database.db import get_db
-from app.schemas.schemas import MedicalClassifyRequest, MedicalSegmentRequest, MedicalStatusResponse
+from app.schemas.schemas import (
+    MedicalClassificationResult,
+    MedicalClassifyRequest,
+    MedicalSegmentRequest,
+    MedicalStatusResponse,
+)
 from app.services.medical_engine import (
     classify_mri,
     classify_uploaded_mri,
@@ -18,12 +23,12 @@ def medical_status():
     return get_medical_status()
 
 
-@router.post("/classify")
+@router.post("/classify", response_model=MedicalClassificationResult)
 def medical_classify(req: MedicalClassifyRequest, db: Session = Depends(get_db)):
     return classify_mri(db, req.image_id)
 
 
-@router.post("/classify/upload")
+@router.post("/classify/upload", response_model=MedicalClassificationResult)
 async def medical_classify_upload(file: UploadFile = File(...)):
     content = await file.read()
     return classify_uploaded_mri(content, file.filename or "upload.png")
